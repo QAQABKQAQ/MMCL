@@ -2,7 +2,7 @@ name: publish
 
 on:
   push:
-    branches::
+    branches:
       - develop
 
 jobs:
@@ -11,6 +11,8 @@ jobs:
       contents: write
       actions: write
       checks: write
+      packages: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -48,10 +50,11 @@ jobs:
 
       - uses: tauri-apps/tauri-action@v0
         env:
-          GITHUB_TOKEN: ${{ secrets.BITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v_VERSION_
-          releaseName: "App v0.0.0"
+          githuToken: ${{ secrets.GITHUB_TOKEN }}
+          tagName: app-v__VERSION__
+          releaseName: "App v__VERSION__"
           releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
