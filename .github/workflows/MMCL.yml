@@ -9,6 +9,8 @@ jobs:
   publish-tauri:
     permissions:
       contents: write
+      actions: write
+      checks: write
     strategy:
       fail-fast: false
       matrix:
