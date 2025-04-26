@@ -13,7 +13,7 @@ export default function ThemeToggle() {
   }
 
   return (
-    <Button variant={"ghost"} size={"icon"} onClick={handleThemeToggle} className="rounded-none">
+    <Button variant={"ghost"} size={"icon"} onClick={handleThemeToggle} className="rounded-none w-10 h-10 hover:bg-muted-foreground/10">
       {theme === "dark" ? 
       <AnimatePresence>
         <motion.div whileHover={{ rotate: 180 }} initial={{ rotate: 0 }} transition={{ duration: 0.3 }} exit={{ rotate: 180 }}>
