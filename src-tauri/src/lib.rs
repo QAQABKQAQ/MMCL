@@ -1,5 +1,6 @@
 use serde_json::Value;
-
+mod cors;
+mod entity;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
