@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 14:29:00
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-25 17:18:48
+ * @LastEditTime: 2025-04-26 20:40:28
  * @FilePath: \mmcl\src\main.tsx
  * @Description: Main Router
  */
@@ -12,12 +12,19 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayOut from "./routers/root";
 import { Toaster } from "./components/ui/sonner";
 import ErrorPage from "./error-page";
+import Home from "./routers/home";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayOut />,
     errorElement: <ErrorPage />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      }
+    ]
   }
 ])
 
