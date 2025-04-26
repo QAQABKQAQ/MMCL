@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 19:39:04
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-25 14:19:58
+ * @LastEditTime: 2025-04-26 15:11:12
  * @FilePath: \mmcl\src\components\title-bar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -52,7 +52,9 @@ export default function Titlebar({
     async function updateIcon() {
       try {
         const isFullscreen = await window.isMaximized();
-        setFullscreenIcon(isFullscreen ? <Maximize /> : <Minimize />);
+
+        // fix 全屏图标显示错误
+        setFullscreenIcon(isFullscreen ? <Minimize /> : <Maximize />);
       } catch (error) {
         console.error("更新图标失败:", error);
       }
