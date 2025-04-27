@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-27 17:52:42
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-27 22:13:44
+ * @LastEditTime: 2025-04-27 22:17:35
  * @FilePath: \mmcl\src\routers\home.tsx
  * @Description: 
  * 
@@ -19,7 +19,7 @@ export default function Home() {
 
   return (
     <>
-      <ScrollArea className="flex-1 h-[calc(100%-4rem)] absolute top-16">
+      <ScrollArea className="flex-1 h-[calc(100%)] absolute z-50">
         <motion.div
           initial={{ opacity: 0, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
