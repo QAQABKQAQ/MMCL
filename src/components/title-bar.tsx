@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 19:39:04
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-26 16:38:30
+ * @LastEditTime: 2025-04-27 18:34:46
  * @FilePath: \mmcl\src\components\title-bar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -71,7 +71,7 @@ export default function Titlebar({
         isTrashed ? "" : "bg-muted border-b border-border"
       )}
     >
-      <p className="px-2 font-[500]">{title}</p>
+      <p className="px-2 font-['Minecraft-Title']">{title}</p>
       <div className="flex items-center gap-4">
         <ThemeToggle />
         <motion.div

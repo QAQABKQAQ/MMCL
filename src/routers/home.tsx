@@ -1,14 +1,25 @@
+/*
+ * @Author: ceteper 75122254@qq.com
+ * @Date: 2025-04-27 17:52:42
+ * @LastEditors: ceteper 75122254@qq.com
+ * @LastEditTime: 2025-04-27 22:13:44
+ * @FilePath: \mmcl\src\routers\home.tsx
+ * @Description: 
+ * 
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
+ */
 import { motion } from "motion/react";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Rocket, ChevronRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import { invoke } from "@tauri-apps/api/core";
 
 export default function Home() {
+
   return (
     <>
-      <ScrollArea className="flex-1 h-full">
+      <ScrollArea className="flex-1 h-[calc(100%-4rem)] absolute top-16">
         <motion.div
           initial={{ opacity: 0, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
