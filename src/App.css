@@ -273,3 +273,53 @@ body.theme-transition::after {
   }
 }
 
+/* 自定义滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: var(--radius);
+  margin: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-foreground);
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  transition: background 0.2s ease;
+  min-height: 40px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+  border: 2px solid var(--border);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--secondary);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border: 2px solid var(--muted);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--sidebar-primary);
+  border: 2px solid var(--muted);
+}
+
+/* 适用于Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--accent-foreground) var(--border);
+}
+
+.dark * {
+  scrollbar-color: var(--primary) var(--secondary);
+}
+
