@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 19:39:04
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-28 12:05:45
+ * @LastEditTime: 2025-04-28 15:44:26
  * @FilePath: \mmcl\src\components\title-bar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -68,7 +68,7 @@ export default function Titlebar({
       className={cn(
         props.className,
         "flex items-center justify-between select-none fixed top-0 left-0 right-0 h-16 z-50 p-4 gap-4",
-        isTrashed ? "" : "bg-muted border-b border-border"
+        isTrashed ? "" : "bg-background border-b border-border"
       )}
     >
       <p className="px-2 font-['Minecraft-Title']">

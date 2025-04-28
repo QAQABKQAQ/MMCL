@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-26 16:29:20
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-28 13:35:03
+ * @LastEditTime: 2025-04-28 15:43:27
  * @FilePath: \mmcl\src\components\theme\theme-toggle.tsx
  * @Description: 
  * 
@@ -30,16 +30,14 @@ export default function ThemeToggle() {
 
   return (
     <motion.div
-      whileTap={{ scale: 0.85 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       <Button 
         variant={"ghost"} 
-        size={"icon"} 
         onClick={handleThemeToggle} 
         className=" group hover:bg-white/30! dark:hover:bg-black/10!"
       >
-        <div className="relative w-5 h-5 overflow-hidden">
+        <div className="relative w-20 h-5 overflow-hidden flex items-center justify-center">
           <AnimatePresence mode="wait" initial={false}>
             {theme === "dark" ? (
               <motion.div
@@ -62,7 +60,7 @@ export default function ThemeToggle() {
                 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Sun className="h-5 w-5 text-yellow-400 drop-shadow-md" />
+                <Sun className="h-5 w-5 text-yellow-400 drop-shadow-md" /> <span className="pl-2">白天模式</span>
               </motion.div>
             ) : (
               <motion.div
@@ -85,7 +83,7 @@ export default function ThemeToggle() {
                 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Moon className="h-5 w-5 drop-shadow-md" />
+                <Moon className="h-5 w-5 drop-shadow-md" /> <span className="pl-2">夜间模式</span>
               </motion.div>
             )}
           </AnimatePresence>
