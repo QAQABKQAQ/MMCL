@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-26 16:29:20
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-26 20:35:35
+ * @LastEditTime: 2025-04-28 13:35:03
  * @FilePath: \mmcl\src\components\theme\theme-toggle.tsx
  * @Description: 
  * 
@@ -17,9 +17,7 @@ export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   const handleThemeToggle = () => {
-    // 添加转场效果
-    document.body.classList.add("theme-transition");
-    
+  
     // 切换主题
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
