@@ -1,7 +1,15 @@
+pub mod domains;
+pub mod infrastructure;
+
+use std::sync::Arc;
+
+use infrastructure::http::HttpClient;
 use serde_json::Value;
-mod cors;
-mod entity;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+//
+//
+//
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
