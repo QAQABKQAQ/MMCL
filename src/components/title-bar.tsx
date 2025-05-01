@@ -2,17 +2,18 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 19:39:04
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-28 15:44:26
+ * @LastEditTime: 2025-05-01 22:50:18
  * @FilePath: \mmcl\src\components\title-bar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Minimize, Maximize, X, Minus } from "lucide-react";
+import { Minimize, Maximize, X, Minus, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 import { Window } from "@tauri-apps/api/window";
 import ThemeToggle from "./theme/theme-toggle";
 import { AnimatePresence, motion } from "motion/react";
+import { useNavigate } from "react-router-dom";
 export default function Titlebar({
   title,
   isMaximized,
@@ -24,6 +25,7 @@ export default function Titlebar({
   isTrashed: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
   const [fullscreenIcon, setFullscreenIcon] = useState(<Maximize />);
+  const router = useNavigate();
   const window = new Window("main");
   async function handleMinimize() {
     await window.minimize();
@@ -67,7 +69,7 @@ export default function Titlebar({
       data-tauri-drag-region
       className={cn(
         props.className,
-        "flex items-center justify-between select-none fixed top-0 left-0 right-0 h-16 z-50 p-4 gap-4",
+        "flex items-center justify-between select-none fixed top-0 left-0 right-0 h-16 z-50 p-4 gap-4 transition-colors",
         isTrashed ? "" : "bg-background border-b border-border"
       )}
     >
@@ -85,6 +87,22 @@ export default function Titlebar({
         )}
       </p>
       <div className="flex items-center gap-4">
+        <motion.div
+          whileHover={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        >
+          <Button
+            onClick={() => router("/settings")}
+            variant={"ghost"}
+            className="group"
+          >
+            <motion.div
+              className="group-hover:scale-105 transition-transform duration-200 flex items-center gap-2"
+            >
+              <Settings className="h-5 w-5" /> <span>设置</span>
+            </motion.div>
+          </Button>
+        </motion.div>
         <ThemeToggle />
         <motion.div
           whileHover={{ scale: 1 }}
@@ -94,7 +112,7 @@ export default function Titlebar({
             onClick={handleMinimize}
             variant={"ghost"}
             size={"icon"}
-            className="flex items-center justify-center group hover:bg-white/30! dark:hover:bg-black/10!"
+            className="flex items-center justify-center group "
           >
             <motion.div
               className="group-hover:scale-105 transition-transform duration-200"
@@ -112,7 +130,7 @@ export default function Titlebar({
             onClick={toggleFullscreen}
             variant={"ghost"}
             size={"icon"}
-            className="flex items-center justify-center group hover:bg-white/30! dark:hover:bg-black/10!"
+            className="flex items-center justify-center group "
           >
             <AnimatePresence>
               <motion.div
@@ -135,7 +153,7 @@ export default function Titlebar({
             onClick={handleClose}
             variant={"ghost"}
             size={"icon"}
-            className="flex items-center justify-center hover:text-red-500 group hover:bg-white/30! dark:hover:bg-black/10!"
+            className="flex items-center justify-center hover:text-red-500 group "
           >
             <motion.div
               className="group-hover:scale-105 transition-transform duration-200"

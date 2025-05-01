@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 14:29:00
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-26 20:40:28
+ * @LastEditTime: 2025-04-28 17:41:06
  * @FilePath: \mmcl\src\main.tsx
  * @Description: Main Router
  */
@@ -13,6 +13,7 @@ import RootLayOut from "./routers/root";
 import { Toaster } from "./components/ui/sonner";
 import ErrorPage from "./error-page";
 import Home from "./routers/home";
+import SettingsLayOut from "./routers/settings";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/settings",
+        element: <SettingsLayOut />,
       }
     ]
   }

@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-27 17:52:42
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-27 22:17:35
+ * @LastEditTime: 2025-04-28 16:17:02
  * @FilePath: \mmcl\src\routers\home.tsx
  * @Description: 
  * 
@@ -27,9 +27,12 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="w-full h-full p-6 flex flex-col flex-1">
 
-          <div className="flex flex-col mb-4">
-            <h1 className="text-2xl font-bold">首 页</h1>
-            <p className="text-sm text-gray-500">欢迎来到MMCL</p>
+          <div className="flex mb-4 items-center gap-4">
+            <img src="../public/steve.png" alt="User Avatar" className="w-16 h-16 rounded-md" />
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-bold font-[Minecraft-Regular]">CRETEPER</h1>
+              <p className="text-sm text-muted-foreground">欢迎来到MMCL</p>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4 w-full">
 
