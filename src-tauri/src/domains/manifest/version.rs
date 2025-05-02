@@ -4,13 +4,16 @@ use std::str;
 
 use serde::Deserialize;
 
-use crate::{domains::error::DomainsError, infrastructure::parse::Parse};
+use crate::{
+    domains::error::DomainsError,
+    infrastructure::{download::DownLoad, parse::Parse},
+};
 
 use super::{asset::AssetIndex, library::Library};
 
 pub type Libraries = Vec<Library>;
 // 注释的是没有反序列化的字段
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Version {
     // arguments:
     #[serde(alias = "assetIndex")]
@@ -40,7 +43,7 @@ impl Parse<&str> for Version {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Download {
     pub client: VersionClient,
     //client_mappings
@@ -56,9 +59,9 @@ impl Parse<&str> for Download {
         Ok(json_str)
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct VersionClient {
-    pub sh1: String,
+    pub sha1: String,
     pub size: u32,
     pub url: String,
 }

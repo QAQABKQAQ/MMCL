@@ -1,8 +1,18 @@
 use serde::Deserialize;
+use sha1::Digest;
 
-use crate::{domains::error::DomainsError, infrastructure::parse::Parse};
+use crate::{
+    domains::error::DomainsError,
+    infrastructure::{
+        download::{DownLoad, LibraryAllowed},
+        parse::Parse,
+        sha1,
+    },
+};
 
-#[derive(Debug, Deserialize)]
+use super::version::Libraries;
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Library {
     pub downloads: LibraryDownload,
     pub name: String,
@@ -15,8 +25,83 @@ impl Parse<&str> for Library {
         Ok(json_str)
     }
 }
+impl LibraryAllowed for Library {
+    fn allowed(&self) -> bool {
+        let mut allow = true;
+        if let Some(rules) = &self.rules {
+            for rule in rules {
+                let os_allowed = match rule.os.name.as_str() {
+                    "osx" => cfg!(target_os = "macos"),
+                    "linux" => cfg!(target_os = "linux"),
+                    "windows" => cfg!(target_os = "windows"),
+                    _ => true,
+                };
+                if !os_allowed {
+                    allow = false;
+                    break;
+                }
+            }
+        }
+        if self.name.contains("natives") {
+            let arch_allowed = if self.name.contains("x86") {
+                cfg!(target_arch = "x86")
+            } else if self.name.contains("arm64") {
+                cfg!(target_arch = "aarch64")
+            } else {
+                cfg!(target_arch = "x86_64")
+            };
+            if !arch_allowed {
+                allow = false;
+            }
+        }
 
-#[derive(Debug, Deserialize)]
+        allow
+    }
+}
+
+#[async_trait::async_trait]
+impl DownLoad for Libraries {
+    async fn download(&self, game_dir: &std::path::Path) -> Result<(), DomainsError> {
+        let library_dir = &game_dir.join("libraries");
+        if !library_dir.exists() {
+            tokio::fs::create_dir_all(library_dir).await?;
+        }
+
+        for library in self {
+            if !library.allowed() {
+                continue;
+            }
+            let library_file = &library.downloads.artifact.path;
+
+            let library_path = library_dir.join(library_file);
+            // 创建父目录
+            if let Some(parent_dir) = library_path.parent() {
+                tokio::fs::create_dir_all(parent_dir).await?;
+            }
+            if library_path.exists() {
+                let library_path_clone = library_path.clone();
+                let expected_sha = &library.downloads.artifact.sha1;
+                let actual_sha = tokio::task::spawn_blocking(move || sha1(&library_path_clone))
+                    .await
+                    .map_err(|e| DomainsError::from(e))?
+                    .map_err(|e| DomainsError::from(e))?;
+                if actual_sha == *expected_sha {
+                    continue;
+                } else {
+                    tokio::fs::remove_file(&library_path).await?;
+                }
+            }
+
+            let url = &library.downloads.artifact.url;
+            let bytes = reqwest::get(url).await?.bytes().await?;
+            tokio::fs::write(&library_path, bytes).await?
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Rule {
     pub action: String,
     pub os: Os,
@@ -29,7 +114,7 @@ impl Parse<&str> for Rule {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Os {
     pub name: String,
 }
@@ -41,7 +126,7 @@ impl Parse<&str> for Os {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct LibraryDownload {
     pub artifact: Artiface,
 }
@@ -53,7 +138,7 @@ impl Parse<&str> for LibraryDownload {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Artiface {
     pub path: String,
     pub sha1: String,
@@ -70,6 +155,12 @@ impl Parse<&str> for Artiface {
 
 #[cfg(test)]
 mod tests {
+    use std::panic;
+
+    use tempfile::tempdir;
+
+    use crate::domains::manifest::version::Version;
+
     use super::*;
 
     #[test]
@@ -111,5 +202,42 @@ mod tests {
         let rules = &json_str.rules.unwrap();
         assert_eq!(rules[0].action, "allow");
         assert_eq!(rules[0].os.name, "osx");
+    }
+
+    #[tokio::test]
+    #[ignore = "library_download"]
+    async fn library_download() {
+        let test_sha1 = format!("3bd9a435263080a3131582cf56884f8bfd9c2d26");
+        let test_version = format!("1.21.5");
+        let test_data = format!(
+            "https://piston-meta.mojang.com/v1/packages/{}/{}.json",
+            test_sha1, test_version
+        );
+        let client = reqwest::Client::new();
+        let response = client
+            .get(&test_data)
+            .send()
+            .await
+            .unwrap_or_else(|e| panic!("{}", e));
+        let game = response
+            .json::<Version>()
+            .await
+            .unwrap_or_else(|e| panic!("{}", e));
+        // let game = reqwest::blocking::get(&test_data)
+        //     .unwrap_or_else(|e| panic!("请求出错{:?},原始请求链接{}", e, &test_data))
+        //     .json::<Version>()
+        //     .unwrap_or_else(|e| panic!("序列化出错{:?}", e));
+        //
+
+        let temp_dir = tempdir().unwrap();
+
+        let download_path = temp_dir.path();
+        // let download_path = &std::env::temp_dir().join("rust-minecraft-client-launch");
+        tokio::fs::create_dir_all(download_path)
+            .await
+            .unwrap_or_else(|e| panic!("{}", e));
+        if let Err(error) = game.libraries.download(download_path).await {
+            panic!("{:?}", error);
+        }
     }
 }
