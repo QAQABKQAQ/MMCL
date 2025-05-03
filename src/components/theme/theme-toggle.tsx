@@ -12,7 +12,7 @@ import { useTheme } from "./theme-prov";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react"
+import { motion } from "motion/react"
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();

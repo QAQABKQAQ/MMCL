@@ -2,18 +2,18 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 19:39:04
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-05-01 22:50:18
+ * @LastEditTime: 2025-05-02 01:00:48
  * @FilePath: \mmcl\src\components\title-bar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Minimize, Maximize, X, Minus, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 import { Window } from "@tauri-apps/api/window";
 import ThemeToggle from "./theme/theme-toggle";
 import { AnimatePresence, motion } from "motion/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 export default function Titlebar({
   title,
   isMaximized,
@@ -24,18 +24,23 @@ export default function Titlebar({
   isMaximized: boolean;
   isTrashed: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
-  const [fullscreenIcon, setFullscreenIcon] = useState(<Maximize />);
-  const router = useNavigate();
-  const window = new Window("main");
-  async function handleMinimize() {
+  const [fullscreenIcon, setFullscreenIcon] = useState(<Maximize />); // get fullscreen icon
+  const [isSettingsOpen, setIsSettingsOpen] = useState<number | null>(null); // 0 close 1 open 2 end 3 back
+  const [isTransitioning, startTransition] = useTransition(); // get transition
+  const [activePath, setActivePath] = useState<string | null>(null); // get active path
+
+  const router = useNavigate(); // get router
+  const window = new Window("main"); // get window
+  const location = useLocation(); // get current path
+  async function handleMinimize() { // minimize window
     await window.minimize();
   }
 
-  async function handleClose() {
+  async function handleClose() { // close window
     await window.close();
   }
 
-  async function toggleFullscreen() {
+  async function toggleFullscreen() { // toggle fullscreen
     try {
       const isFullscreen = await window.isMaximized();
       if (isFullscreen) {
@@ -50,7 +55,7 @@ export default function Titlebar({
     }
   }
 
-  useEffect(() => {
+  useEffect(() => { // update icon
     async function updateIcon() {
       try {
         const isFullscreen = await window.isMaximized();
@@ -63,7 +68,25 @@ export default function Titlebar({
     }
     updateIcon();
   }, []);
+  useEffect(() => { // listen to settings open
+    if (isSettingsOpen === 2) {
+        router("/settings");
+        setIsSettingsOpen(0);
+    }
+  }, [isSettingsOpen]);
 
+  useEffect(() => { // listen to location change
+    if (location.pathname === "/settings") {
+      setActivePath("/settings");
+    } else {
+      setActivePath(null);
+    }
+    if (location.pathname === "/") {
+      if (location.state?.back === true) {
+        setIsSettingsOpen(3);
+      }
+    }
+  }, [location]);
   return (
     <div
       data-tauri-drag-region
@@ -92,9 +115,14 @@ export default function Titlebar({
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           <Button
-            onClick={() => router("/settings")}
+            disabled={location.pathname === "/settings"}
+            data-active={activePath === "/settings" ? "true" : "false"}
+            onClick={() => {
+              setIsSettingsOpen(1);
+              setActivePath("/settings");
+            }}
             variant={"ghost"}
-            className="group"
+            className="group data-[active=true]:bg-primary data-[active=true]:text-primary-foreground disabled:opacity-100 disabled:cursor-not-allowed"
           >
             <motion.div
               className="group-hover:scale-105 transition-transform duration-200 flex items-center gap-2"
@@ -163,6 +191,29 @@ export default function Titlebar({
           </Button>
         </motion.div>
       </div>
+
+      {
+        isSettingsOpen === 1 && (
+          <motion.div
+            onAnimationComplete={() => {
+              // 确保动画完全完成后才设置状态
+              requestAnimationFrame(() => {
+                setIsSettingsOpen(2);
+              });
+            }}
+            className="fixed top-16 left-0 w-full h-full z-50 bg-muted"
+            initial={{ opacity: 0, y: "100vh" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          />
+        )
+      }
+      {
+        isSettingsOpen === 3 && (
+          <motion.div className="fixed top-16 left-0 w-full h-full z-50 bg-muted" initial={{ opacity: 1, y: 0 }} animate={{ opacity: 1, y: "100vh" }} exit={{ opacity: 0, y: 100 }} transition={{ duration: 0.3 }} />
+        )
+      }
     </div>
   );
 }

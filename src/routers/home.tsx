@@ -9,11 +9,9 @@
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
  */
 import { motion } from "motion/react";
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Rocket, ChevronRight } from "lucide-react";
+import { Rocket, ChevronRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { invoke } from "@tauri-apps/api/core";
 
 export default function Home() {
 

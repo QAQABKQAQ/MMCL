@@ -199,8 +199,8 @@
 .dark * {
   scrollbar-color: var(--primary) var(--secondary);
 }
-
 ::view-transition-old(root),
 ::view-transition-new(root) {
     animation: none;
 }
+
