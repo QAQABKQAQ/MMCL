@@ -61,23 +61,24 @@ export default function ThemeToggle() {
       <Button
         variant={"ghost"}
         onClick={handleThemeToggle}
+        size={"icon"}
         className="group"
       >
-        <div className="relative w-20 h-5 overflow-hidden flex items-center justify-center">
+        <div className="relative w-5 h-5 overflow-hidden flex items-center justify-center">
             {theme === "dark" ? (
               <motion.div
                 key="sun"
 
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Sun className="h-5 w-5 text-yellow-400 drop-shadow-md" /> <span className="pl-2">白天模式</span>
+                <Sun className="h-5 w-5 text-yellow-400 drop-shadow-md" />
               </motion.div>
             ) : (
               <motion.div
                 key="moon"
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Moon className="h-5 w-5 drop-shadow-md" /> <span className="pl-2">夜间模式</span>
+                <Moon className="h-5 w-5 drop-shadow-md" />
               </motion.div>
             )}
         </div>

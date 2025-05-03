@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 19:39:04
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-05-02 01:00:48
+ * @LastEditTime: 2025-05-02 17:04:18
  * @FilePath: \mmcl\src\components\title-bar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,7 +13,8 @@ import { Button } from "./ui/button";
 import { Window } from "@tauri-apps/api/window";
 import ThemeToggle from "./theme/theme-toggle";
 import { AnimatePresence, motion } from "motion/react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useViewTransitionState } from "react-router-dom";
 export default function Titlebar({
   title,
   isMaximized,
@@ -25,9 +26,6 @@ export default function Titlebar({
   isTrashed: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
   const [fullscreenIcon, setFullscreenIcon] = useState(<Maximize />); // get fullscreen icon
-  const [isSettingsOpen, setIsSettingsOpen] = useState<number | null>(null); // 0 close 1 open 2 end 3 back
-  const [isTransitioning, startTransition] = useTransition(); // get transition
-  const [activePath, setActivePath] = useState<string | null>(null); // get active path
 
   const router = useNavigate(); // get router
   const window = new Window("main"); // get window
@@ -68,25 +66,6 @@ export default function Titlebar({
     }
     updateIcon();
   }, []);
-  useEffect(() => { // listen to settings open
-    if (isSettingsOpen === 2) {
-        router("/settings");
-        setIsSettingsOpen(0);
-    }
-  }, [isSettingsOpen]);
-
-  useEffect(() => { // listen to location change
-    if (location.pathname === "/settings") {
-      setActivePath("/settings");
-    } else {
-      setActivePath(null);
-    }
-    if (location.pathname === "/") {
-      if (location.state?.back === true) {
-        setIsSettingsOpen(3);
-      }
-    }
-  }, [location]);
   return (
     <div
       data-tauri-drag-region
@@ -110,27 +89,6 @@ export default function Titlebar({
         )}
       </p>
       <div className="flex items-center gap-4">
-        <motion.div
-          whileHover={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        >
-          <Button
-            disabled={location.pathname === "/settings"}
-            data-active={activePath === "/settings" ? "true" : "false"}
-            onClick={() => {
-              setIsSettingsOpen(1);
-              setActivePath("/settings");
-            }}
-            variant={"ghost"}
-            className="group data-[active=true]:bg-primary data-[active=true]:text-primary-foreground disabled:opacity-100 disabled:cursor-not-allowed"
-          >
-            <motion.div
-              className="group-hover:scale-105 transition-transform duration-200 flex items-center gap-2"
-            >
-              <Settings className="h-5 w-5" /> <span>设置</span>
-            </motion.div>
-          </Button>
-        </motion.div>
         <ThemeToggle />
         <motion.div
           whileHover={{ scale: 1 }}
@@ -191,29 +149,6 @@ export default function Titlebar({
           </Button>
         </motion.div>
       </div>
-
-      {
-        isSettingsOpen === 1 && (
-          <motion.div
-            onAnimationComplete={() => {
-              // 确保动画完全完成后才设置状态
-              requestAnimationFrame(() => {
-                setIsSettingsOpen(2);
-              });
-            }}
-            className="fixed top-16 left-0 w-full h-full z-50 bg-muted"
-            initial={{ opacity: 0, y: "100vh" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          />
-        )
-      }
-      {
-        isSettingsOpen === 3 && (
-          <motion.div className="fixed top-16 left-0 w-full h-full z-50 bg-muted" initial={{ opacity: 1, y: 0 }} animate={{ opacity: 1, y: "100vh" }} exit={{ opacity: 0, y: 100 }} transition={{ duration: 0.3 }} />
-        )
-      }
     </div>
   );
 }

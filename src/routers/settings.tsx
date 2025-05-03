@@ -2,7 +2,7 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-27 21:38:21
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-05-02 01:05:52
+ * @LastEditTime: 2025-05-03 11:26:14
  * @FilePath: \mmcl\src\routers\settings.tsx
  * @Description: 
  * 
@@ -16,27 +16,45 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
+import { useRef } from "react";
+import { CircleReveal } from "@/components/circle-reveal";
+
 function SettingsLayout() {
-  const nav = useNavigate();
+  const iconRef = useRef<HTMLSpanElement>(null);
+  const transitionContainerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
   return (
-    <main className="w-full flex-1 h-[calc(100%)] absolute z-50">
-      <motion.div className="w-full h-full">
-        <div className="bg-muted">
-          <motion.div className="w-full h-full" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} transition={{duration: 0.5}}>
-            <SidebarProvider className="pt-16">
-              <div className="relative w-full">
-                <div className="w-full h-full absolute inset-0">
-                  <div className="">
-                    <Button variant="outline" onClick={() => nav("/", {state: {back: true}})}>返回首页</Button>
-                  </div>
-                  <Outlet />
+    <motion.div
+      className="w-full flex-1 h-[calc(100%)] absolute z-50">
+      {/* 创建过渡容器 */}
+      <div ref={transitionContainerRef} className="home-transition-container"></div>
+      <div className="w-full h-full bg-muted">
+        <motion.div
+          className="w-full h-full">
+          <SidebarProvider className="pt-16">
+            <div className="relative w-full">
+              <div className="w-full h-full absolute inset-0">
+                <div className="p-4">
+                  <CircleReveal targetRoute="/">
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 rounded-md bg-accent hover:bg-accent/80 transition-colors"
+                    >
+                      <span ref={iconRef} className="fade-icon">
+                        <ChevronLeft className="w-4 h-4" />
+                      </span>
+                    </button>
+                  </CircleReveal>
                 </div>
+                <Outlet />
               </div>
-            </SidebarProvider>
-          </motion.div>
-        </div>
-      </motion.div>
-    </main>
+            </div>
+          </SidebarProvider>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
 

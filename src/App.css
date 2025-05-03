@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-
 @font-face {
   font-family: 'Minecraft-Regular';
   src: url('/fonts/1_Minecraft-Regular.otf') format('opentype');
@@ -101,6 +100,7 @@
   --smoothing-moz: grayscale;
   --font-weight-normal: 400;
   --text-adjust: 100%;
+  --circle-x: right bottom; /* 默认值 */
 }
 
 .dark {
@@ -145,7 +145,8 @@
 
   body {
     @apply bg-background text-foreground;
-
+    overflow-x: hidden;
+    position: relative;
   }
 }
 
@@ -199,8 +200,18 @@
 .dark * {
   scrollbar-color: var(--primary) var(--secondary);
 }
-::view-transition-old(root),
-::view-transition-new(root) {
-    animation: none;
+
+/* 确保圆形展开容器正确定位 */
+.circle-reveal-container {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
 }
 
+::view-transition-old(root) {
+  animation: none;
+}
+
+::view-transition-new(root) {
+  animation: none;
+}
