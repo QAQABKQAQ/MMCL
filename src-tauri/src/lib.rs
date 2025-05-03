@@ -1,10 +1,9 @@
 pub mod domains;
 pub mod infrastructure;
 
-use std::sync::Arc;
-
-use infrastructure::http::HttpClient;
-use serde_json::Value;
+use domains::{error::DomainsError, manifest::version_manifest::VersionManiest};
+use reqwest::Client;
+use tauri::async_runtime;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 //
@@ -16,21 +15,26 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-async fn get_mc_version() -> Result<String, String> {
-    let response = reqwest::get("https://launchermeta.mojang.com/mc/game/version_manifest.json")
-        .await
-        .map_err(|e| e.to_string())?;
+async fn get_mc_version() -> Result<VersionManiest, DomainsError> {
+    let client = Client::new();
+    let response = async_runtime::spawn(async move {
+        client
+            .get("https://launchermeta.mojang.com/mc/game/version_manifest.json")
+            .send()
+            .await
+    })
+    .await??;
+    let json: VersionManiest =
+        async_runtime::spawn(async move { response.json::<VersionManiest>().await }).await??;
 
-    let json: Value = response.json::<Value>().await.map_err(|e| e.to_string())?;
-
-    Ok(json.to_string())
+    Ok(json)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, get_mc_version])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

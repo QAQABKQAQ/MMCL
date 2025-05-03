@@ -5,20 +5,19 @@
 // skins // 后面加
 
 use std::collections::HashMap;
-use std::io::Write;
 use std::path::Path;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::domains::error::DomainsError;
 use crate::infrastructure::download::DownLoad;
-use crate::infrastructure::{ sha1};
+use crate::infrastructure::sha1;
 use crate::infrastructure::parse::Parse;
 
 
 /// 请求这个地址获取的反序列化
 /// https://piston-meta.mojang.com/v1/packages/{sha1}/{version}.json
-#[derive(Debug, Deserialize,Clone)]
+#[derive(Debug, Deserialize,Clone,Serialize)]
 pub struct AssetIndex {
     pub id: String,
     pub sha1: String,
@@ -28,11 +27,11 @@ pub struct AssetIndex {
     pub url: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize,Serialize)]
 pub struct Index {
     pub objects: HashMap<String, Object>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize,Serialize)]
 pub struct Object {
     pub hash: String,
     pub size: u32,
@@ -93,9 +92,7 @@ if let Some(parent_dir) = path.parent() {
             tasks.push(tokio::spawn(async move {
                 if path.exists(){
                     let path_clone = path.clone();
-                    let actual_sha = tokio::task::spawn_blocking(move || sha1(&path_clone)).await
-                    .map_err(|e| DomainsError::from(e))?
-                    .map_err(|e| DomainsError::from(e))?;
+                    let actual_sha = tokio::task::spawn_blocking(move || sha1(&path_clone)).await??;
                     if actual_sha == hash {
                         return Ok::<_,DomainsError>(());
                     }else{
@@ -137,9 +134,8 @@ impl Parse<&str> for Object {
 #[cfg(test)]
 mod tests {
 
-    use std::env::temp_dir;
 
-    use tempfile::{tempdir, tempdir_in};
+    use tempfile::tempdir;
 
     use super::*;
     #[test]

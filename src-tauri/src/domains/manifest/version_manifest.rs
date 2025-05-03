@@ -4,14 +4,8 @@ use std::sync::Arc;
 ///
 /// 获取版本所有版本地址的反序列化
 use async_trait::async_trait;
-use futures::future::join_all;
-use serde::Deserialize;
-use tauri::async_runtime::spawn_blocking;
-use tokio::{
-    fs,
-    sync::Semaphore,
-    task::{self},
-};
+use serde::{Deserialize, Serialize};
+use tokio::sync::Semaphore;
 
 use crate::{
     domains::error::DomainsError,
@@ -20,7 +14,7 @@ use crate::{
 
 use super::version::Version as v_Version;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct VersionManiest {
     pub latest: Latest,
     pub versions: Vec<Version>,
@@ -33,7 +27,7 @@ impl Parse<&str> for VersionManiest {
         Ok(json_str)
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Latest {
     pub release: String,
     pub snapshot: String,
@@ -47,7 +41,7 @@ impl Parse<&str> for Latest {
         Ok(json_str)
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Version {
     pub id: String,
     #[serde(alias = "type")]
@@ -123,22 +117,19 @@ impl DownLoad for Version {
 
         game.asset_index.download(&version_dir).await?;
 
-        let version_config = version_dir.join(&format!("{}.json", self.id));
+        let version_config = version_dir.join(format!("{}.json", self.id));
         if version_config.exists() {
             tokio::fs::remove_file(&version_config).await?;
         }
         let config_bytes = client.get(&self.url).send().await?.bytes().await?;
         tokio::fs::write(&version_config, config_bytes).await?;
 
-        let jar_path = version_dir.join(&format!("{}.jar", &self.id));
+        let jar_path = version_dir.join(format!("{}.jar", &self.id));
         if jar_path.exists() {
             let expected_sha = &game.downloads.client.sha1;
             let jar_path_clone = jar_path.clone();
 
-            let actual_sha = tokio::task::spawn_blocking(move || sha1(&jar_path_clone))
-                .await
-                .map_err(|e| DomainsError::from(e))?
-                .map_err(|e| DomainsError::from(e))?;
+            let actual_sha = tokio::task::spawn_blocking(move || sha1(&jar_path_clone)).await??;
 
             if actual_sha == *expected_sha {
                 return Ok(());
@@ -196,12 +187,8 @@ where
 #[cfg(test)]
 mod tests {
 
-    use std::sync::Arc;
-
-    use tempfile::tempdir;
-    use tokio::sync::Semaphore;
-
     use super::*;
+    use tempfile::tempdir;
     #[test]
     fn test_version() {
         let test_json = r#"
@@ -292,7 +279,7 @@ mod tests {
 
         tokio::fs::create_dir_all(&download_path).await.unwrap();
 
-        if let Err(err) = version.download(&download_path).await {
+        if let Err(err) = version.download(download_path).await {
             panic!("下载出错{:?}", err);
         }
     }

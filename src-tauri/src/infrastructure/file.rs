@@ -14,7 +14,7 @@ impl FileStore for LocalFileStore {
             fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
 
-        fs::write(path, content).map_err(|e| e.to_string());
+        let _ = fs::write(path, content).map_err(|e| e.to_string());
 
         Ok(())
     }

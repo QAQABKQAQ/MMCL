@@ -1,5 +1,4 @@
-use serde::Deserialize;
-use sha1::Digest;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     domains::error::DomainsError,
@@ -12,7 +11,7 @@ use crate::{
 
 use super::version::Libraries;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Library {
     pub downloads: LibraryDownload,
     pub name: String,
@@ -44,10 +43,13 @@ impl LibraryAllowed for Library {
         }
         if self.name.contains("natives") {
             let arch_allowed = if self.name.contains("x86") {
+                // self.name.contains("x86")
                 cfg!(target_arch = "x86")
             } else if self.name.contains("arm64") {
+                // self.name.contains("arm64")
                 cfg!(target_arch = "aarch64")
             } else {
+                // self.name.contains("x86_64")
                 cfg!(target_arch = "x86_64")
             };
             if !arch_allowed {
@@ -81,10 +83,8 @@ impl DownLoad for Libraries {
             if library_path.exists() {
                 let library_path_clone = library_path.clone();
                 let expected_sha = &library.downloads.artifact.sha1;
-                let actual_sha = tokio::task::spawn_blocking(move || sha1(&library_path_clone))
-                    .await
-                    .map_err(|e| DomainsError::from(e))?
-                    .map_err(|e| DomainsError::from(e))?;
+                let actual_sha =
+                    tokio::task::spawn_blocking(move || sha1(&library_path_clone)).await??;
                 if actual_sha == *expected_sha {
                     continue;
                 } else {
@@ -101,7 +101,7 @@ impl DownLoad for Libraries {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Rule {
     pub action: String,
     pub os: Os,
@@ -114,7 +114,7 @@ impl Parse<&str> for Rule {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Os {
     pub name: String,
 }
@@ -126,7 +126,7 @@ impl Parse<&str> for Os {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct LibraryDownload {
     pub artifact: Artiface,
 }
@@ -138,7 +138,7 @@ impl Parse<&str> for LibraryDownload {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Artiface {
     pub path: String,
     pub sha1: String,
@@ -207,8 +207,8 @@ mod tests {
     #[tokio::test]
     #[ignore = "library_download"]
     async fn library_download() {
-        let test_sha1 = format!("3bd9a435263080a3131582cf56884f8bfd9c2d26");
-        let test_version = format!("1.21.5");
+        let test_sha1 = "3bd9a435263080a3131582cf56884f8bfd9c2d26".to_string();
+        let test_version = "1.21.5".to_string();
         let test_data = format!(
             "https://piston-meta.mojang.com/v1/packages/{}/{}.json",
             test_sha1, test_version
