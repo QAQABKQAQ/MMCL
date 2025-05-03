@@ -2,17 +2,19 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 19:39:04
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-27 18:34:46
+ * @LastEditTime: 2025-05-02 17:04:18
  * @FilePath: \mmcl\src\components\title-bar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { cn } from "@/lib/utils";
-import { Minimize, Maximize, X, Minus } from "lucide-react";
+import { Minimize, Maximize, X, Minus, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 import { Window } from "@tauri-apps/api/window";
 import ThemeToggle from "./theme/theme-toggle";
 import { AnimatePresence, motion } from "motion/react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useViewTransitionState } from "react-router-dom";
 export default function Titlebar({
   title,
   isMaximized,
@@ -23,17 +25,20 @@ export default function Titlebar({
   isMaximized: boolean;
   isTrashed: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
-  const [fullscreenIcon, setFullscreenIcon] = useState(<Maximize />);
-  const window = new Window("main");
-  async function handleMinimize() {
+  const [fullscreenIcon, setFullscreenIcon] = useState(<Maximize />); // get fullscreen icon
+
+  const router = useNavigate(); // get router
+  const window = new Window("main"); // get window
+  const location = useLocation(); // get current path
+  async function handleMinimize() { // minimize window
     await window.minimize();
   }
 
-  async function handleClose() {
+  async function handleClose() { // close window
     await window.close();
   }
 
-  async function toggleFullscreen() {
+  async function toggleFullscreen() { // toggle fullscreen
     try {
       const isFullscreen = await window.isMaximized();
       if (isFullscreen) {
@@ -48,7 +53,7 @@ export default function Titlebar({
     }
   }
 
-  useEffect(() => {
+  useEffect(() => { // update icon
     async function updateIcon() {
       try {
         const isFullscreen = await window.isMaximized();
@@ -61,17 +66,28 @@ export default function Titlebar({
     }
     updateIcon();
   }, []);
-
   return (
     <div
       data-tauri-drag-region
       className={cn(
         props.className,
-        "flex items-center justify-between select-none fixed top-0 left-0 right-0 h-16 z-50 p-4 gap-4",
-        isTrashed ? "" : "bg-muted border-b border-border"
+        "flex items-center justify-between select-none fixed top-0 left-0 right-0 h-16 z-50 p-4 gap-4 transition-colors",
+        isTrashed ? "" : "bg-background border-b border-border"
       )}
     >
-      <p className="px-2 font-['Minecraft-Title']">{title}</p>
+      <p className="px-2 font-['Minecraft-Title']">
+        {title ? (
+          <>
+            <span className="text-orange-500">{title.slice(0, 1)}</span>
+            {title.slice(1).toLowerCase()}
+          </>
+        ) : (
+          <>
+            <span className="text-orange-500">M</span>
+            MCL
+          </>
+        )}
+      </p>
       <div className="flex items-center gap-4">
         <ThemeToggle />
         <motion.div
@@ -82,7 +98,7 @@ export default function Titlebar({
             onClick={handleMinimize}
             variant={"ghost"}
             size={"icon"}
-            className="flex items-center justify-center group hover:bg-white/30! dark:hover:bg-black/10!"
+            className="flex items-center justify-center group "
           >
             <motion.div
               className="group-hover:scale-105 transition-transform duration-200"
@@ -100,7 +116,7 @@ export default function Titlebar({
             onClick={toggleFullscreen}
             variant={"ghost"}
             size={"icon"}
-            className="flex items-center justify-center group hover:bg-white/30! dark:hover:bg-black/10!"
+            className="flex items-center justify-center group "
           >
             <AnimatePresence>
               <motion.div
@@ -123,7 +139,7 @@ export default function Titlebar({
             onClick={handleClose}
             variant={"ghost"}
             size={"icon"}
-            className="flex items-center justify-center hover:text-red-500 group hover:bg-white/30! dark:hover:bg-black/10!"
+            className="flex items-center justify-center hover:text-red-500 group "
           >
             <motion.div
               className="group-hover:scale-105 transition-transform duration-200"

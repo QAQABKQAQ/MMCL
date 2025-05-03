@@ -2,35 +2,21 @@
  * @Author: ceteper 75122254@qq.com
  * @Date: 2025-04-24 14:29:00
  * @LastEditors: ceteper 75122254@qq.com
- * @LastEditTime: 2025-04-26 20:40:28
+ * @LastEditTime: 2025-05-02 16:43:43
  * @FilePath: \mmcl\src\main.tsx
  * @Description: Main Router
  */
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import RootLayOut from "./routers/root";
+import { BrowserRouter } from "react-router-dom";
+import AnimatedRoutes from "./hook/animate-routes";
 import { Toaster } from "./components/ui/sonner";
-import ErrorPage from "./error-page";
-import Home from "./routers/home";
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <RootLayOut />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-      }
-    ]
-  }
-])
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
-    <Toaster richColors />
+    <BrowserRouter>
+      <AnimatedRoutes />
+      <Toaster richColors />
+    </BrowserRouter>
   </React.StrictMode>
 );
