@@ -64,10 +64,17 @@ impl Parse<&str> for Version {
         Ok(json_str)
     }
 }
-
+#[derive(Debug, Clone, Serialize)]
+pub struct Progress {
+    pub percent: u8,
+}
 #[async_trait::async_trait]
 impl DownLoad for Version {
-    async fn download(&self, game_dir: &std::path::Path) -> Result<(), DomainsError> {
+    async fn download(
+        &self,
+        game_dir: &std::path::Path,
+        progress_tx: tokio::sync::mpsc::Sender<Progress>,
+    ) -> Result<(), DomainsError> {
         let client = reqwest::Client::new();
 
         let game = client
@@ -85,12 +92,15 @@ impl DownLoad for Version {
         let semaphore = Arc::new(Semaphore::new(10));
 
         let mut tasks = Vec::new();
+        let total = game.libraries.len() + 1;
+        let mut downloaded = 0;
         for library in &game.libraries {
             let client = client.clone();
             let version_dir = version_dir.clone();
             let library = library.clone();
             let semaphore = Arc::clone(&semaphore);
 
+            let progress_tx = progress_tx.clone();
             tasks.push(tokio::spawn(async move {
                 let _permit = semaphore.acquire().await.unwrap();
 
@@ -106,6 +116,11 @@ impl DownLoad for Version {
                     tokio::fs::write(&library_file, bytes).await?;
                 }
 
+                // 下载进度
+                downloaded += 1;
+                let percent = ((downloaded as f32 / total as f32) * 100.0) as u8;
+                progress_tx.send(Progress { percent }).await?;
+
                 Ok::<(), DomainsError>(())
             }));
         }
@@ -115,7 +130,9 @@ impl DownLoad for Version {
             result??; // 先解包 JoinError，再解包 Result
         }
 
-        game.asset_index.download(&version_dir).await?;
+        let (tx, mut _rx) = tokio::sync::mpsc::channel(100);
+
+        game.asset_index.download(&version_dir, tx).await?;
 
         let version_config = version_dir.join(format!("{}.json", self.id));
         if version_config.exists() {
@@ -279,7 +296,8 @@ mod tests {
 
         tokio::fs::create_dir_all(&download_path).await.unwrap();
 
-        if let Err(err) = version.download(download_path).await {
+        let (tx, mut _rx) = tokio::sync::mpsc::channel(100);
+        if let Err(err) = version.download(download_path, tx).await {
             panic!("下载出错{:?}", err);
         }
     }

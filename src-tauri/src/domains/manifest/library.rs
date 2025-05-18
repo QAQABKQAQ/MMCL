@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-use super::version::Libraries;
+use super::{version::Libraries, version_manifest::Progress};
 
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Library {
@@ -63,7 +63,12 @@ impl LibraryAllowed for Library {
 
 #[async_trait::async_trait]
 impl DownLoad for Libraries {
-    async fn download(&self, game_dir: &std::path::Path) -> Result<(), DomainsError> {
+    async fn download(
+        &self,
+        game_dir: &std::path::Path,
+
+        progress_tx: tokio::sync::mpsc::Sender<Progress>,
+    ) -> Result<(), DomainsError> {
         let library_dir = &game_dir.join("libraries");
         if !library_dir.exists() {
             tokio::fs::create_dir_all(library_dir).await?;
@@ -236,7 +241,9 @@ mod tests {
         tokio::fs::create_dir_all(download_path)
             .await
             .unwrap_or_else(|e| panic!("{}", e));
-        if let Err(error) = game.libraries.download(download_path).await {
+
+        let (tx, mut _rx) = tokio::sync::mpsc::channel(100);
+        if let Err(error) = game.libraries.download(download_path, tx).await {
             panic!("{:?}", error);
         }
     }

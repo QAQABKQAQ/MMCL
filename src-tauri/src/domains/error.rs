@@ -1,8 +1,11 @@
+use core::str;
 use std::{fmt::Display, string::ParseError};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::task::JoinError;
+
+use super::manifest::version_manifest::Progress;
 
 ///Error用from自动转化
 #[derive(Debug, Error, Serialize)]
@@ -30,6 +33,24 @@ pub enum DomainsError {
     // ParseError(#[from] ParseError),
     #[error("Other error : {0}")]
     OtherError(MMCLOtherError), // Other(#[source] Box<dyn std::error::Error + Send + Sync>),
+    #[error("Minecraft Version Not Found")]
+    VersionNotFound,
+
+    #[error("Zip archive error : {0}")]
+    ZipError(MMCLZipError),
+}
+
+//│    required for `Result<(), DomainsError>` to implement `FromResidual<Result<Infallible, ZipError>>` rustc (E0277) [111, 70]
+impl Display for MMCLZipError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.messages)
+    }
+}
+
+impl From<zip::result::ZipError> for DomainsError {
+    fn from(value: zip::result::ZipError) -> Self {
+        DomainsError::ZipError(MMCLZipError::from(value))
+    }
 }
 
 impl From<reqwest::Error> for DomainsError {
@@ -57,7 +78,11 @@ impl From<ParseError> for DomainsError {
         DomainsError::ParseError(MMCLParseError::from(value))
     }
 }
-
+impl From<tokio::sync::mpsc::error::SendError<Progress>> for DomainsError {
+    fn from(e: tokio::sync::mpsc::error::SendError<Progress>) -> Self {
+        DomainsError::AnyErrorString(e.to_string())
+    }
+}
 impl From<JoinError> for DomainsError {
     fn from(e: JoinError) -> Self {
         DomainsError::OtherError(MMCLOtherError::from(e))
@@ -70,6 +95,17 @@ impl From<Box<dyn std::error::Error + Send + Sync>> for DomainsError {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MMCLZipError {
+    pub messages: String,
+}
+impl From<zip::result::ZipError> for MMCLZipError {
+    fn from(value: zip::result::ZipError) -> Self {
+        MMCLZipError {
+            messages: value.to_string(),
+        }
+    }
+}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MMCLReqwestError {
     pub message: String,

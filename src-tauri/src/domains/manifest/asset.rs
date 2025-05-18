@@ -14,6 +14,8 @@ use crate::infrastructure::download::DownLoad;
 use crate::infrastructure::sha1;
 use crate::infrastructure::parse::Parse;
 
+use super::version_manifest::Progress;
+
 
 /// 请求这个地址获取的反序列化
 /// https://piston-meta.mojang.com/v1/packages/{sha1}/{version}.json
@@ -48,7 +50,10 @@ impl Parse<&str> for AssetIndex {
 
 #[async_trait::async_trait]
 impl DownLoad for AssetIndex{
-    async fn download(&self, game_dir: &Path) -> Result<(), DomainsError> {
+    async fn download(&self, game_dir: &Path,
+
+        progress_tx: tokio::sync::mpsc::Sender<Progress>,
+    ) -> Result<(), DomainsError> {
         let download_id = &self.id; 
         let index_dir = &game_dir.join("assets").join("indexes");
         if !index_dir.exists(){
@@ -193,7 +198,8 @@ mod tests {
         let download_dir =temp_dir.path();
         tokio::fs::create_dir_all(download_dir).await.unwrap_or_else(|e| panic!("{}",e));
 
-        if  let Err(e) = asset_index.download(download_dir).await {
+    let (tx, mut rx) = tokio::sync::mpsc::channel(100);
+        if  let Err(e) = asset_index.download(download_dir,tx).await {
             panic!("{:?}",e);
         }
     }
